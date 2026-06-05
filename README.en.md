@@ -82,6 +82,16 @@ User error — the service returns 500 with the Vulkan driver's error text.
 
 ## Quick start
 
+### Published image (Docker Hub)
+
+```bash
+docker run -d -p 8000:8000 okopok/imgup
+# → http://localhost:8000
+```
+
+The image is published as `okopok/imgup` — run it without building.
+For a custom build, use `docker build` (section below).
+
 ### Locally on Mac (development)
 
 ```bash

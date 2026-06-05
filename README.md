@@ -82,6 +82,16 @@ macOS / любой        N100 с Intel GPU
 
 ## Быстрый старт
 
+### Готовый образ (Docker Hub)
+
+```bash
+docker run -d -p 8000:8000 okopok/imgup
+# → http://localhost:8000
+```
+
+Образ публикуется в `okopok/imgup` — можно запустить без сборки.
+Если нужна своя версия — используй `docker build` (секция ниже).
+
 ### Локально на Mac (разработка)
 
 ```bash
