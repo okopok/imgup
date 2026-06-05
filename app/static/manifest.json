@@ -1,0 +1,17 @@
+{
+  "name": "imgup — Image Upscaler",
+  "short_name": "imgup",
+  "description": "AI-powered image upscaling",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#0f0f1a",
+  "icons": [
+    {
+      "src": "/static/app-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

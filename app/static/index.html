@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>imgup — Image Upscaler</title>
+<meta name="theme-color" content="#0f0f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="imgup">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="application-name" content="imgup">
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="apple-touch-icon" href="/static/app-icon.svg">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <div class="logo"><span class="logo-icon">▲</span> imgup</div>
+    <div class="header-right">
+      <select id="langSelect" class="lang-select">
+        <option value="en">EN</option>
+        <option value="ru">RU</option>
+      </select>
+      <span class="driver-badge" id="driverBadge">cpu</span>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☀️</button>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="tagline" data-i18n="tagline">Image Upscaler</h1>
+
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-content" id="dropzoneContent">
+        <div class="dropzone-icon">🖼</div>
+        <p class="dropzone-text" data-i18n="dropzoneText">Drop images here or click to browse</p>
+        <p class="dropzone-hint" data-i18n="dropzoneHint">JPEG · PNG · WebP · TIFF · BMP (max 50 MB each)</p>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" multiple hidden>
+    </div>
+
+    <div class="file-queue" id="fileQueue" hidden>
+      <div class="file-queue-header">
+        <span id="fileQueueTitle"></span>
+        <div class="queue-actions">
+          <button class="btn-change" id="btnAddMore" data-i18n="addMoreBtn">+ Add more</button>
+          <button class="btn-change" id="btnClearQueue" data-i18n="clearBtn">Clear</button>
+        </div>
+      </div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="controls" id="controls" hidden>
+      <div class="control-group">
+        <label for="targetSelect" data-i18n="targetLabel">Target</label>
+        <select id="targetSelect">
+          <option value="hd">HD (1920×1080)</option>
+          <option value="2k">2K (2560×1440)</option>
+          <option value="4k" selected>4K (3840×2160)</option>
+          <option value="5k">5K (5120×2880)</option>
+          <option value="8k">8K (7680×4320)</option>
+          <option value="12k">12K (11520×6480)</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="btnUpscaleAll" disabled data-i18n="upscaleAllBtn">↑ Upscale All</button>
+    </div>
+
+    <div class="options">
+      <label class="checkbox-label">
+        <input type="checkbox" id="downscaleToggle">
+        <span class="checkbox-mark"></span>
+        <span data-i18n="downscaleLabel">Downscale if larger</span>
+      </label>
+    </div>
+
+    <div class="loader" id="loader" hidden>
+      <div class="spinner"></div>
+      <span id="loaderText" data-i18n="loaderText">Upscaling...</span>
+    </div>
+
+    <div class="error" id="error" hidden>
+      <span class="error-icon">✕</span>
+      <span id="errorText"></span>
+    </div>
+  </main>
+
+  <footer>
+    <span id="footerInfo"></span>
+  </footer>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
