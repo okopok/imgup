@@ -2,17 +2,43 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
-  build:
-
+  build-base:
     runs-on: ubuntu-latest
-
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag okopok/imgup:$(date +%s) --tag okopok/imgup:latest
+      - uses: actions/checkout@v6
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Generate tag
+        id: tag
+        run: echo "tag=8.2-$(date +%Y.%m.%d)" >> $GITHUB_OUTPUT
+
+      - name: Build and push php8-base
+        uses: docker/build-push-action@v7
+        with:
+          platforms: linux/amd64,linux/arm64/v8
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            okopok/imgup:${{ steps.tag.outputs.tag }}
+            okopok/imgup:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.tag.outputs.tag }}
