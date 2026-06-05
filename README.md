@@ -1,51 +1,53 @@
 # imgup
 
-Image upscaling microservice. Accepts an image via API or web UI and upscales it to 4K (3840×2160) by default. Runs in Docker on any x86_64 Linux host — primary target is an Intel N100 with 16 GB RAM.
+> [English version](README.en.md)
 
-## Web UI
+Микросервис для увеличения разрешения изображений. Принимает картинку через API или веб-интерфейс и увеличивает до 4K (3840×2160) по умолчанию. Запускается в Docker на любом x86_64 Linux — основная цель Intel N100 с 16 GB RAM.
 
-Open `http://localhost:8000` in a browser:
+## Веб-интерфейс
+
+Открой `http://localhost:8000` в браузере:
 
 ```
 ┌──────────────────────────────────────────────────┐
 │  imgup                         [🌙] [cpu]        │
 │  Image Upscaler to 4K                            │
 │                                                  │
-│  ┌─────── Drop images here or click ─────────┐   │
+│  ┌─────── Бросай сюда картинки ──────────────┐   │
 │  │  🖼  JPEG · PNG · WebP · TIFF · BMP       │   │
 │  └───────────────────────────────────────────┘   │
-│  ┌─ 4 files ─────────────────────────────────┐   │
+│  ┌─ 4 файла ─────────────────────────────────┐   │
 │  │  [thumb] photo_1.jpg  888 KB · JPEG · 640×480  │
 │  │  [thumb] photo_2.jpg  2.1 MB · PNG · 1920×1080│
 │  │  [thumb] photo_3.jpg  1.5 MB · WebP · 2560×.. │
 │  │  [thumb] photo_4.jpg  4.2 MB · TIFF · 3840×.. │
-│  │     [+ Add more]  [Clear]                    │
+│  │     [+ Добавить]  [Очистить]                  │
 │  └────────────────────────────────────────────┘   │
-│  ┌─ Target ──┐  [↑ Upscale All]                  │
-│  │ 4K        │                                   │
-│  └───────────┘                                   │
+│  ┌─ Цель ───┐  [↑ Увеличить все]                 │
+│  │ 4K       │                                    │
+│  └──────────┘                                    │
 └──────────────────────────────────────────────────┘
 ```
 
-### Features
-- Drag & drop or click to upload multiple images
-- Batch upscale — process all files sequentially
-- File queue with thumbnail, name, size, type, resolution
-- Per-file status (Pending / Processing / Done / Error)
-- Auto-download each result on completion
-- Dark/light theme toggle
-- PWA support (installable, offline static, apple-touch-icon)
-- Driver info в хедере
+### Возможности
+- Drag & drop или клик — загрузка нескольких изображений
+- Пакетная обработка — последовательное увеличение всех файлов
+- Очередь файлов: превью, имя, размер, тип, разрешение
+- Статус каждого файла (Ожидание / Обработка... / Готово / Ошибка)
+- Авто-скачивание каждого результата по готовности
+- Переключение тёмной/светлой темы
+- PWA (установка на телефон, офлайн-кеш статики, apple-touch-icon)
+- Информация о драйвере в хедере
 
-## Architecture
+## Архитектура
 
 ```
          ┌──────────────────┐
-Browser ─┤  GET /           │  Web UI (HTML+CSS+JS)
+Браузер ─┤  GET /           │  Web UI (HTML+CSS+JS)
          └──────────────────┘
 
          ┌──────────────────┐
-Client ──┤  POST /api/*     │  JSON → изображение
+Клиент ──┤  POST /api/*     │  JSON → изображение
          └────────┬─────────┘
                   │
        ┌──────────┴──────────┐
@@ -55,9 +57,9 @@ macOS / любой        N100 с Intel GPU
 качество ниже        качество Real-ESRGAN
 ```
 
-**Разделение URL:**
+**Маршруты:**
 - `GET /` — веб-интерфейс
-- `GET /static/*` — статика (CSS, JS)
+- `GET /static/*` — статика (CSS, JS, SVG, манифест, воркер)
 - `GET /api/health` — health check
 - `POST /api/upscale` — апскейл по URL
 - `POST /api/upscale/upload` — апскейл загрузки
@@ -70,7 +72,7 @@ macOS / любой        N100 с Intel GPU
 |---|---|---|
 | `cpu` **(по умолчанию)** | Разработка на Mac, тесты, любое окружение без GPU | Pillow LANCZOS + UnsharpMask. Работает всегда, качество базовое |
 | `intel` | N100 / любой Intel GPU Linux | `realesrgan-ncnn-vulkan` через Intel Vulkan ICD. Требует `--device /dev/dri` |
-| `lavapipe` | Linux без физического GPU | Тот же бинарник, но через Lavapipe (софт- Vulkan). Работает везде на Linux, медленно |
+| `lavapipe` | Linux без физического GPU | Тот же бинарник, но через Lavapipe (софт-Vulkan). Работает везде на Linux, медленно |
 
 ### Если драйвер не указан — `cpu`
 На Mac Vulkan не эмулируется, бинарник не запускается. Только CPU.
@@ -138,9 +140,9 @@ docker run --platform linux/amd64 -p 8000:8000 imgup
 
 ### `POST /api/upscale`
 
-Апскейл изображения по URL.
+Увеличение изображения по URL.
 
-**Request:**
+**Запрос:**
 
 ```json
 {
@@ -150,17 +152,17 @@ docker run --platform linux/amd64 -p 8000:8000 imgup
 }
 ```
 
-- `url` (req) — ссылка на изображение
-- `scale` (opt) — множитель (2, 3, 4…); если `null` — авто-расчёт до 4K
-- `output_format` (opt) — `JPEG`, `PNG`, `WEBP`; если `null` — сохранить исходный
+- `url` (обяз.) — ссылка на изображение
+- `scale` (опц.) — множитель (2, 3, 4…); если `null` — авто-расчёт до 4K
+- `output_format` (опц.) — `JPEG`, `PNG`, `WEBP`; если `null` — сохранить исходный
 
-**Response:** изображение в теле ответа, `Content-Type` по формату.
+**Ответ:** изображение в теле ответа, `Content-Type` по формату.
 
 ### `POST /api/upscale/upload`
 
-Апскейл загруженного файла.
+Увеличение загруженного файла.
 
-**Request:** `multipart/form-data`
+**Запрос:** `multipart/form-data`
 
 | Поле | Тип | Описание |
 |---|---|---|
@@ -168,7 +170,7 @@ docker run --platform linux/amd64 -p 8000:8000 imgup
 | `scale` (query) | int? | Множитель |
 | `output_format` (query) | str? | Формат на выходе |
 
-**Response:** изображение.
+**Ответ:** изображение.
 
 ## Как это работает
 
@@ -191,10 +193,10 @@ scale = max(ceil(3840 / width), ceil(2160 / height))
 
 | Переменная | По умолчанию | Описание |
 |---|---|---|
-| `PORT` | `8000` | Порт HTTP |
+| `PORT` | `8000` | HTTP-порт |
 | `UPSCALE_DRIVER` | `cpu` | `cpu` / `intel` / `lavapipe` |
 
-## Docker image
+## Docker-образ
 
 ```
 imgup:latest ~ 330 MB
