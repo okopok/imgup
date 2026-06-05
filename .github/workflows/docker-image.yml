@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 jobs:
-  build-base:
+  build-and-push:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
