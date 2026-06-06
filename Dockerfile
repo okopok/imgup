@@ -30,9 +30,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ app/
 
-RUN adduser --disabled-password --no-create-home --uid 1000 appuser && \
-    chown -R appuser:appuser /app
-USER appuser
+USER root
 
 ENV PORT=8000
 ENV UPSCALE_DRIVER=cpu
