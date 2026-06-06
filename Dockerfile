@@ -14,7 +14,7 @@ RUN curl -fSLo realesrgan.zip \
 FROM python:3.11-slim-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgomp1 libstdc++6 ca-certificates && \
+    libgomp1 libstdc++6 ca-certificates libvulkan1 mesa-vulkan-drivers && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /build/realesrgan-ncnn-vulkan \
