@@ -230,6 +230,7 @@ def _run_vulkan(input_path: Path, output_path: Path, scale: int) -> None:
                 "-s", str(scale),
                 "-m", str(MODELS_DIR),
                 "-n", "realesrgan-x4plus",
+                "-g", "0",
                 "-j", "4:4:4",
             ],
             check=True,
