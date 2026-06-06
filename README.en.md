@@ -268,6 +268,7 @@ docker run -d \
 | `UPSCALE_THREADS` | `4:4:4` | Threads `load:proc:save` for the Vulkan driver. On N100 recommend `1:2:2` |
 | `UPSCALE_MODEL` | `realesrgan-x4plus` | Real-ESRGAN model: `realesrgan-x4plus` (quality) or `realesrnet-x4plus` (speed) |
 | `UPSCALE_TILE` | `0` (auto) | Tile size in pixels. `0` = auto. On weak GPUs try `128` or `256` |
+| `UPSCALE_GPU` | (auto) | GPU index for Vulkan. Empty = auto-detect |
 
 ## Docker image
 

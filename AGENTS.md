@@ -53,7 +53,7 @@ Multi-file: dropzone с `multiple`, очередь файлов с превью,
 - **`DRIVER`** — глобальный синглтон, инициализируется из `UPSCALE_DRIVER` при импорте
 - **`_cpu_upscale()`** — Pillow LANCZOS + UnsharpMask
 - **`_vulkan_upscale()`** — subprocess `realesrgan-ncnn-vulkan`
-- **`_run_vulkan()`** — настройка `VK_ICD_FILENAMES` под выбранный драйвер, форсирует GPU0 (`-g 0`), читает `UPSCALE_THREADS`, `UPSCALE_MODEL`, `UPSCALE_TILE`
+- **`_run_vulkan()`** — настройка `VK_ICD_FILENAMES` под выбранный драйвер, читает `UPSCALE_THREADS`, `UPSCALE_MODEL`, `UPSCALE_TILE`, `UPSCALE_GPU`
 - **`_decompose_scale(n)`** — раскладывает нужный scale на проходы (4, 3, 2)
 - **`upscale_file()`** — публичное API, диспатчит на драйвер
 
@@ -136,7 +136,7 @@ docker stop imgup
 | `UPSCALE_DRIVER` | `cpu` | `cpu` / `intel` / `lavapipe` |
 | `UPSCALE_THREADS` | `4:4:4` | Потоки `load:proc:save` для Vulkan |
 | `UPSCALE_MODEL` | `realesrgan-x4plus` | `realesrgan-x4plus` или `realesrnet-x4plus` |
-| `UPSCALE_TILE` | `0` | Размер тайла (0 = auto) |
+| `UPSCALE_GPU` | (не передаётся) | Индекс GPU для Vulkan. Пустая строка = авто |
 
 ## Заметки
 

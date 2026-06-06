@@ -224,6 +224,7 @@ def _run_vulkan(input_path: Path, output_path: Path, scale: int) -> None:
     threads = os.getenv("UPSCALE_THREADS", "4:4:4")
     model = os.getenv("UPSCALE_MODEL", "realesrgan-x4plus")
     tile = os.getenv("UPSCALE_TILE", "0")
+    gpu = os.getenv("UPSCALE_GPU", "")
 
     cmd = [
         str(REALESRGAN_BIN),
@@ -232,9 +233,10 @@ def _run_vulkan(input_path: Path, output_path: Path, scale: int) -> None:
         "-s", str(scale),
         "-m", str(MODELS_DIR),
         "-n", model,
-        "-g", "0",
-        "-j", threads,
     ]
+    if gpu:
+        cmd.extend(["-g", gpu])
+    cmd.extend(["-j", threads])
     if tile != "0":
         cmd.extend(["-t", tile])
 

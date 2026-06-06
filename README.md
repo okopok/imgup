@@ -268,6 +268,7 @@ docker run -d \
 | `UPSCALE_THREADS` | `4:4:4` | Потоки `load:proc:save` для Vulkan-драйвера. На N100 рекомендуется `1:2:2` |
 | `UPSCALE_MODEL` | `realesrgan-x4plus` | Модель Real-ESRGAN: `realesrgan-x4plus` (качество) или `realesrnet-x4plus` (скорость) |
 | `UPSCALE_TILE` | `0` (auto) | Размер тайла в пикселях. `0` = авто. На слабых GPU помогает `128` или `256` |
+| `UPSCALE_GPU` | (авто) | Индекс GPU для Vulkan. Пустая строка = авто-выбор |
 
 ## Docker-образ
 
