@@ -103,6 +103,8 @@ uvicorn app.main:app --reload --port 8000
 
 ### Docker на N100 (продакшн)
 
+Подробные настройки — в секции [Производительность](#производительность). Базовый запуск:
+
 ```bash
 docker build -t imgup .
 
@@ -110,21 +112,14 @@ docker run -d \
   --name imgup \
   -e PORT=8000 \
   -e UPSCALE_DRIVER=intel \
+  -e UPSCALE_THREADS=1:2:2 \
+  -e UPSCALE_MODEL=realesrnet-x4plus \
   --device /dev/dri:/dev/dri \
   -p 8000:8000 \
   imgup
 ```
 
-Для `lavapipe` (без GPU):
-
-```bash
-docker run -d \
-  --name imgup \
-  -e PORT=8000 \
-  -e UPSCALE_DRIVER=lavapipe \
-  -p 8000:8000 \
-  imgup
-```
+Для Lavapipe или CPU — см. соответствующие примеры в секции производительности.
 
 ### Docker на Mac (тестирование)
 
@@ -199,12 +194,80 @@ scale = max(ceil(3840 / width), ceil(2160 / height))
 
 Для scale > 4 выполняются последовательные проходы (4, 3, 2), чтобы не превысить максимальный коэффициент модели. После всех проходов, если результат шире/выше 4K, он уменьшается до bounding box 3840×2160 с сохранением пропорций.
 
+## Производительность
+
+Скорость апскейла сильно зависит от драйвера и платформы. Ниже — рекомендации для разных сценариев.
+
+### N100 / слабый Intel GPU (24 EU)
+
+Аппаратный Vulkan работает, но GPU слабый. Рекомендуемые настройки:
+
+```bash
+docker run -d \
+  --name imgup \
+  -e PORT=8000 \
+  -e UPSCALE_DRIVER=intel \
+  -e UPSCALE_THREADS=1:2:2 \
+  -e UPSCALE_MODEL=realesrnet-x4plus \
+  --device /dev/dri:/dev/dri \
+  -p 8000:8000 \
+  imgup
+```
+
+- `UPSCALE_THREADS=1:2:2` — меньше потоков, не перегружает слабый GPU
+- `UPSCALE_MODEL=realesrnet-x4plus` — более лёгкая модель (чуть ниже качество, но в 2-3 раза быстрее)
+- Если нужно максимальное качество — замени на `realesrgan-x4plus`, но готовься ждать дольше
+
+### Десктоп с мощным Intel GPU (Xe / UHD 7xx+)
+
+```bash
+docker run -d \
+  --name imgup \
+  -e PORT=8000 \
+  -e UPSCALE_DRIVER=intel \
+  -e UPSCALE_THREADS=4:4:4 \
+  -e UPSCALE_MODEL=realesrgan-x4plus \
+  --device /dev/dri:/dev/dri \
+  -p 8000:8000 \
+  imgup
+```
+
+### CPU (любая платформа)
+
+CPU-драйвер работает на Pillow, без Vulkan. Скорость зависит от CPU и количества ядер. На N100 ~30-60 сек на кадр 640×480 → 4K.
+
+```bash
+docker run -d \
+  --name imgup \
+  -e PORT=8000 \
+  -e UPSCALE_DRIVER=cpu \
+  -p 8000:8000 \
+  imgup
+```
+
+### Lavapipe (софт-Vulkan, только Linux)
+
+Медленнее CPU-драйвера — не рекомендуется. Используй только если нужно именно Real-ESRGAN качество, а GPU нет.
+
+```bash
+docker run -d \
+  --name imgup \
+  -e PORT=8000 \
+  -e UPSCALE_DRIVER=lavapipe \
+  -e UPSCALE_THREADS=1:1:1 \
+  -p 8000:8000 \
+  imgup
+```
+
 ## Переменные окружения
 
 | Переменная | По умолчанию | Описание |
 |---|---|---|
 | `PORT` | `8000` | HTTP-порт |
 | `UPSCALE_DRIVER` | `cpu` | `cpu` / `intel` / `lavapipe` |
+| `UPSCALE_THREADS` | `4:4:4` | Потоки `load:proc:save` для Vulkan-драйвера. На N100 рекомендуется `1:2:2` |
+| `UPSCALE_MODEL` | `realesrgan-x4plus` | Модель Real-ESRGAN: `realesrgan-x4plus` (качество) или `realesrnet-x4plus` (скорость) |
+| `UPSCALE_TILE` | `0` (auto) | Размер тайла в пикселях. `0` = авто. На слабых GPU помогает `128` или `256` |
 
 ## Docker-образ
 

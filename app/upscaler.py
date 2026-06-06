@@ -221,23 +221,26 @@ def _run_vulkan(input_path: Path, output_path: Path, scale: int) -> None:
     if icd:
         env = {"VK_ICD_FILENAMES": icd}
 
+    threads = os.getenv("UPSCALE_THREADS", "4:4:4")
+    model = os.getenv("UPSCALE_MODEL", "realesrgan-x4plus")
+    tile = os.getenv("UPSCALE_TILE", "0")
+
+    cmd = [
+        str(REALESRGAN_BIN),
+        "-i", str(input_path),
+        "-o", str(output_path),
+        "-s", str(scale),
+        "-m", str(MODELS_DIR),
+        "-n", model,
+        "-g", "0",
+        "-j", threads,
+    ]
+    if tile != "0":
+        cmd.extend(["-t", tile])
+
     try:
-        subprocess.run(
-            [
-                str(REALESRGAN_BIN),
-                "-i", str(input_path),
-                "-o", str(output_path),
-                "-s", str(scale),
-                "-m", str(MODELS_DIR),
-                "-n", "realesrgan-x4plus",
-                "-g", "0",
-                "-j", "4:4:4",
-            ],
-            check=True,
-            capture_output=True,
-            timeout=300,
-            env={**os.environ, **(env or {})},
-        )
+        subprocess.run(cmd, check=True, capture_output=True, timeout=300,
+                       env={**os.environ, **(env or {})})
     except subprocess.CalledProcessError as e:
         msg = e.stderr.decode(errors="replace") if e.stderr else str(e)
         raise UpscaleError(f"Upscale failed (exit {e.returncode}): {msg}") from e

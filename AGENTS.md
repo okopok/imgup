@@ -1,5 +1,10 @@
 # AGENTS.md — imgup
 
+> **ВАЖНО: при любых изменениях README.md или AGENTS.md нужно обновлять оба языка**
+> - `README.md` (русский) и `README.en.md` (английский) — всегда синхронно
+> - `AGENTS.md` — обновлять при изменении архитектуры, переменных, маршрутов, инструкций
+> — английской версии AGENTS нет, это внутренняя документация для агентов
+
 ## Структура проекта
 
 ```
@@ -48,7 +53,7 @@ Multi-file: dropzone с `multiple`, очередь файлов с превью,
 - **`DRIVER`** — глобальный синглтон, инициализируется из `UPSCALE_DRIVER` при импорте
 - **`_cpu_upscale()`** — Pillow LANCZOS + UnsharpMask
 - **`_vulkan_upscale()`** — subprocess `realesrgan-ncnn-vulkan`
-- **`_run_vulkan()`** — настройка `VK_ICD_FILENAMES` под выбранный драйвер
+- **`_run_vulkan()`** — настройка `VK_ICD_FILENAMES` под выбранный драйвер, форсирует GPU0 (`-g 0`), читает `UPSCALE_THREADS`, `UPSCALE_MODEL`, `UPSCALE_TILE`
 - **`_decompose_scale(n)`** — раскладывает нужный scale на проходы (4, 3, 2)
 - **`upscale_file()`** — публичное API, диспатчит на драйвер
 
@@ -73,7 +78,7 @@ Multi-stage:
 1. **builder**: `python:3.11-slim-bookworm` + curl → скачивает `realesrgan-ncnn-vulkan` v0.2.5.0 с моделями
 2. **runtime**: тот же образ, копирует бинарник + модели + Python-код
 
-Vulkan-драйверы (`mesa-vulkan-drivers`) **не** устанавливаются по умолчанию. Образ минимален (~330 MB), Vulkan-драйверы ставит пользователь при деплое на N100.
+Vulkan-драйверы (`mesa-vulkan-drivers`) устанавливаются в образ. Для работы Intel-драйвера нужен проброс `/dev/dri`.
 
 ## Выбор драйвера
 
@@ -129,6 +134,9 @@ docker stop imgup
 |---|---|---|
 | `PORT` | `8000` | HTTP-порт |
 | `UPSCALE_DRIVER` | `cpu` | `cpu` / `intel` / `lavapipe` |
+| `UPSCALE_THREADS` | `4:4:4` | Потоки `load:proc:save` для Vulkan |
+| `UPSCALE_MODEL` | `realesrgan-x4plus` | `realesrgan-x4plus` или `realesrnet-x4plus` |
+| `UPSCALE_TILE` | `0` | Размер тайла (0 = auto) |
 
 ## Заметки
 

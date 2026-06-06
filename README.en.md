@@ -103,6 +103,8 @@ uvicorn app.main:app --reload --port 8000
 
 ### Docker on N100 (production)
 
+Detailed settings — see the [Performance](#performance) section. Basic launch:
+
 ```bash
 docker build -t imgup .
 
@@ -110,21 +112,14 @@ docker run -d \
   --name imgup \
   -e PORT=8000 \
   -e UPSCALE_DRIVER=intel \
+  -e UPSCALE_THREADS=1:2:2 \
+  -e UPSCALE_MODEL=realesrnet-x4plus \
   --device /dev/dri:/dev/dri \
   -p 8000:8000 \
   imgup
 ```
 
-For `lavapipe` (no GPU):
-
-```bash
-docker run -d \
-  --name imgup \
-  -e PORT=8000 \
-  -e UPSCALE_DRIVER=lavapipe \
-  -p 8000:8000 \
-  imgup
-```
+For Lavapipe or CPU — see the corresponding examples in the Performance section.
 
 ### Docker on Mac (testing)
 
@@ -199,12 +194,80 @@ Examples:
 
 For scale > 4, sequential passes (4, 3, 2) are performed to stay within the model's maximum coefficient. After all passes, if the result is wider/taller than 4K, it's downscaled to fit the 3840×2160 bounding box while preserving aspect ratio.
 
+## Performance
+
+Upscale speed depends heavily on the driver and platform. Below are recommendations for different scenarios.
+
+### N100 / weak Intel GPU (24 EU)
+
+Hardware Vulkan works, but the GPU is weak. Recommended settings:
+
+```bash
+docker run -d \
+  --name imgup \
+  -e PORT=8000 \
+  -e UPSCALE_DRIVER=intel \
+  -e UPSCALE_THREADS=1:2:2 \
+  -e UPSCALE_MODEL=realesrnet-x4plus \
+  --device /dev/dri:/dev/dri \
+  -p 8000:8000 \
+  imgup
+```
+
+- `UPSCALE_THREADS=1:2:2` — fewer threads, doesn't overload a weak GPU
+- `UPSCALE_MODEL=realesrnet-x4plus` — lighter model (slightly lower quality, but 2-3x faster)
+- For maximum quality — replace with `realesrgan-x4plus`, but expect longer wait times
+
+### Desktop with powerful Intel GPU (Xe / UHD 7xx+)
+
+```bash
+docker run -d \
+  --name imgup \
+  -e PORT=8000 \
+  -e UPSCALE_DRIVER=intel \
+  -e UPSCALE_THREADS=4:4:4 \
+  -e UPSCALE_MODEL=realesrgan-x4plus \
+  --device /dev/dri:/dev/dri \
+  -p 8000:8000 \
+  imgup
+```
+
+### CPU (any platform)
+
+The CPU driver uses Pillow, no Vulkan required. Speed depends on the CPU and core count. On N100 ~30-60s per 640×480 → 4K frame.
+
+```bash
+docker run -d \
+  --name imgup \
+  -e PORT=8000 \
+  -e UPSCALE_DRIVER=cpu \
+  -p 8000:8000 \
+  imgup
+```
+
+### Lavapipe (software Vulkan, Linux only)
+
+Slower than the CPU driver — not recommended. Use only if you specifically need Real-ESRGAN quality and have no GPU.
+
+```bash
+docker run -d \
+  --name imgup \
+  -e PORT=8000 \
+  -e UPSCALE_DRIVER=lavapipe \
+  -e UPSCALE_THREADS=1:1:1 \
+  -p 8000:8000 \
+  imgup
+```
+
 ## Environment variables
 
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | `8000` | HTTP port |
 | `UPSCALE_DRIVER` | `cpu` | `cpu` / `intel` / `lavapipe` |
+| `UPSCALE_THREADS` | `4:4:4` | Threads `load:proc:save` for the Vulkan driver. On N100 recommend `1:2:2` |
+| `UPSCALE_MODEL` | `realesrgan-x4plus` | Real-ESRGAN model: `realesrgan-x4plus` (quality) or `realesrnet-x4plus` (speed) |
+| `UPSCALE_TILE` | `0` (auto) | Tile size in pixels. `0` = auto. On weak GPUs try `128` or `256` |
 
 ## Docker image
 
